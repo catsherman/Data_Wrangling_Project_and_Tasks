@@ -1,0 +1,48 @@
+select 
+	contactid as ID,
+	gendercode as GC,
+	tri_age as Age,
+	parentcustomeridname as parentIdName, 
+	tri_imaginecareenrollmentstatus as imagineEnrollmentStat, 
+	address1_stateorprovince as addressStateProv, 
+	tri_imaginecareenrollmentemailsentdate as imagineEmailSendDate, 
+	tri_enrollmentcompletedate as enrollComplete, 
+	gender as GenderInt
+into csherman.hw1
+from dbo.Demographics
+
+Alter table csherman.hw1
+	Add DaysToCompleteEnroll As 
+	DATEDIFF(day, TRY_CONVERT( datetime, imagineEmailSendDate, 101), TRY_CONVERT( datetime, enrollComplete, 101))
+
+Alter table csherman.hw1
+	Add EnrollmentStatus As 
+		Case 
+			When imagineEnrollmentStat = 167410011 then 'Complete'
+			When imagineEnrollmentStat = 167410001 then 'Email Sent'
+			When imagineEnrollmentStat = 167410004 then 'Non Responder'
+			When imagineEnrollmentStat = 167410005 then 'Facilitated Enrollment'
+			When imagineEnrollmentStat = 167410002 then 'Incomplete'
+			When imagineEnrollmentStat = 167410003 then 'Opted Out'
+			When imagineEnrollmentStat = 167410000 then 'Unprocessed'
+			When imagineEnrollmentStat = 167410006 then 'Second email sent'
+		End
+
+Alter table csherman.hw1
+	Add Gender As 
+		Case 
+			When GenderInt = 2 then 'Female'
+			When GenderInt = 1 then 'Male'
+			When GenderInt = 167410000 then 'Other'
+			When GenderInt is null then 'Unknown'
+		End
+
+Alter table csherman.hw1
+	Add AgeGroup As 
+		Case 
+			When Age <= 25 then '0-25'
+			When Age > 25 and Age <= 50 then '26-50'
+			When Age > 50 and Age <= 75 then '51-75'
+			When Age > 75 and Age <= 100 then '76-100'
+			When Age > 100 then '100+'
+		End
