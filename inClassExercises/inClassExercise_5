@@ -1,0 +1,12 @@
+flowsheetsTbl$DISP_NAME <- gsub( "cc\\/kg", "CC\\-Kg", flowsheetsTbl$DISP_NAME, perl = TRUE)
+
+flowsheetsTbl$DISP_NAME <- gsub("[[:alnum:]]", " ", flowsheetsTbl$DISP_NAME, perl = TRUE)
+flowsheetsTbl$PAT_ENC_CSN_ID <- gsub("[[:alnum:]]", " ", flowsheetsTbl$PAT_ENC_CSN_ID, perl = TRUE)
+flowsheetsTbl$NEW_APPT_DATE <- gsub("[[:alnum:]]", " ", flowsheetsTbl$NEW_APPT_DATE, perl = TRUE)
+flowsheetsTbl$MEAS_VALUE <- gsub("[[:alnum:]]", " ", flowsheetsTbl$MEAS_VALUE, perl = TRUE)
+flowsheetsTbl$F5 <- gsub("[[:alnum:]]", " ", flowsheetsTbl$F5, perl = TRUE)
+
+providerTbl$LastNames <- str_split_fixed(providerTbl$NEW_PROV_NAME, "\\,", 2)
+providerTbl$namesSplit <- str_split(providerTbl$NEW_PROV_NAME, "\\,", 2)
+WaLastNames <- grep("Wa", providerTbl$LastNames, value = TRUE)
+
