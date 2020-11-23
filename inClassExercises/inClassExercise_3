@@ -1,0 +1,44 @@
+SELECT tri_name, count(tri_patientid) as numPatients 
+from qbs181.dbo.Conditions c 
+group by tri_name 
+having count(tri_patientid) > 100
+
+select AVG(meas_value) as AvgHeight
+from 
+(select i.DOB_CATEGORY, f.PAT_ENC_CSN_ID, f.MEAS_VALUE
+from qbs181.dbo.Inpatient i 
+inner join
+qbs181.dbo.Outpatient o 
+on i.NEW_PAT_ENC_CSN_ID = o.NEW_PAT_ENC_CSN_ID 
+left join 
+qbs181.dbo.Flowsheets f 
+on i.NEW_PAT_ENC_CSN_ID = f.PAT_ENC_CSN_ID 
+where f.DISP_NAME = 'Height') t 
+where DOB_CATEGORY = 'Over 64'
+
+select avg(MEAS_VALUE) as AvgHeight
+from qbs181.dbo.Flowsheets f
+left join
+qbs181.dbo.Encounters e 
+on f.PAT_ENC_CSN_ID = e.NEW_PAT_ENC_CSN_ID
+left join qbs181.dbo.Dx d
+on e.NEW_PAT_ENC_CSN_ID = d.NEW_PAT_ENC_CSN_ID 
+where dx_name like '%hypertension%' and f.DISP_NAME = 'height'
+
+select avg(MEAS_VALUE) as AvgWeight
+from qbs181.dbo.Flowsheets f
+left join
+qbs181.dbo.Encounters e 
+on f.PAT_ENC_CSN_ID = e.NEW_PAT_ENC_CSN_ID
+left join qbs181.dbo.Dx d
+on e.NEW_PAT_ENC_CSN_ID = d.NEW_PAT_ENC_CSN_ID 
+where dx_name like '%hypertension%' and f.DISP_NAME = 'weight'
+
+select avg(MEAS_VALUE) as AvgBMI
+from qbs181.dbo.Flowsheets f
+left join
+qbs181.dbo.Encounters e 
+on f.PAT_ENC_CSN_ID = e.NEW_PAT_ENC_CSN_ID
+left join qbs181.dbo.Dx d
+on e.NEW_PAT_ENC_CSN_ID = d.NEW_PAT_ENC_CSN_ID 
+where dx_name like '%hypertension%' and f.DISP_NAME like 'BMI (Calculated)'
