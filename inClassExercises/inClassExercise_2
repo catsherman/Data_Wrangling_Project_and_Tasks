@@ -1,0 +1,26 @@
+SELECT count(parentcustomeridname) 
+from dbo.Demographics D, dbo.Conditions C
+where D.contactid = C.tri_patientid 
+	and C.tri_name = 'Hypertension' 
+	and D.parentcustomeridname = 'Dartmouth-Hitchcock'
+
+SELECT tri_name, AVG(tri_age) as Avg_Age
+from( 
+	SELECT *
+	from dbo.Demographics D, Conditions C
+	where D.contactid = C.tri_patientid
+) cd
+Where cd.tri_name = 'COPD' or cd.tri_name like 'Hypertension' or cd.tri_name like '%c%h%f%'
+GROUP By cd.tri_name
+
+select gendercode, count(DISTINCT contactid) as Num_Patients
+FROM (
+	SELECT *
+	from( 
+		SELECT *
+		from dbo.Demographics D, Conditions C
+		where D.contactid = C.tri_patientid
+	) cd
+Where cd.tri_name = 'COPD' or cd.tri_name like 'Hypertension' or cd.tri_name like '%c%h%f%'
+) x
+GROUP BY x.gendercode
