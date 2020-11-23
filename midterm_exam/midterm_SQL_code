@@ -1,0 +1,39 @@
+Alter table csherman.midterm 
+	Drop Column RiskFactorCodes
+
+SELECT * FROM csherman.midterm m 
+
+Alter table csherman.midterm 
+	Add HaveDiabetes As
+		Case 
+			When DIQ010 = 1 then 'Yes'
+			When DIQ010 = 2 then 'No'
+			When DIQ010 = 3 then 'Boarderline'
+			When DIQ010 = 9 then 'Do not Know'
+		End
+
+		
+Alter table csherman.midterm 
+	Add RiskFactors As
+		CONCAT_WS(', ', ISNULL(DIQ175A, null), ISNULL(DIQ175B, null), ISNULL(DIQ175C, null), 
+				ISNULL(DIQ175D, null), ISNULL(DIQ175E, null), ISNULL(DIQ175F, null), ISNULL(DIQ175G, null), 
+				ISNULL(DIQ175H, null), ISNULL(DIQ175I, null), ISNULL(DIQ175J, null), ISNULL(DIQ175K, null), ISNULL(DIQ175L, null),
+				ISNULL(DIQ175M, null), ISNULL(DIQ175N, null), ISNULL(DIQ175O, null), ISNULL(DIQ175P, null), 
+				ISNULL(DIQ175Q, null), ISNULL(DIQ175R, null), ISNULL(DIQ175S, null), ISNULL(DIQ175T, null), ISNULL(DIQ175U, null),
+				ISNULL(DIQ175V, null), ISNULL(DIQ175W, null), ISNULL(DIQ175X, null))
+
+Alter table csherman.midterm 
+	Add BloodPressure As
+		CONCAT_WS('/', ISNULL(DIQ300S, null), ISNULL(DIQ300D, null)) 
+
+Alter table csherman.midterm 
+	Add GoalBloodPressure As
+		CONCAT_WS('/', ISNULL(DID310S, null), ISNULL(DID310D, null)) 
+
+		
+Select SEQN, HaveDiabetes, DID040 as AgeWhenDiagnosed, DIQ170 as HealthRiskForDiabetes, DIQ172 as FeelCouldBeAtRisk, 
+	RiskFactors, DIQ180 as BloodTestPast3Years, DIQ050 as TakingInsulin, DID060 as MonthsTakingInsulin, DIQ070 as TakeDiabeticPills , 
+	DIQ230 as TimeSinceDiabeticSpecialist, DIQ240 as DocForDiabetes, DID250 as TimeSeenADoc,  DID260 as DaysFreqBloodSugarCheck, 
+	DIQ275 as CheckedForA1C, DIQ280 as LastA1CLevel, DIQ291 as GoalA1C, BloodPressure, GoalBloodPressure,  DID320 as LDL, DID330 as GoalLDL, 
+	DID341 as DocCheckedFeet, DID350 as DayFreqOfFeetCheck, DIQ360 as TimeSincePupilDilation, DIQ080 as DiabetesAffectedEyes
+From csherman.midterm
