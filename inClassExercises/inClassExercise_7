@@ -40,7 +40,7 @@ clean_text
 library(rjson)
 library(rnoaa)
 
-webToken <- "IohiFWLUzmIrazsLAQksXhMWiPPxUWcR"
+webToken <- "XXX"
 
 weatherStationAirTemps <- ghcnd_search("USW00013840", var = c("TMAX","TMIN"))
 
