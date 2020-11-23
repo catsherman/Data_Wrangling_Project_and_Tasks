@@ -1,0 +1,78 @@
+# HW 3 Data Wrangling
+# Catherine Sherman
+
+#install.packages("dplyr")
+library(dplyr)
+library(tidyverse)
+library(magrittr)
+library(nycflights13)
+library(ggplot2)
+
+# Tidy data with tidyr
+table1
+table2
+table3
+table4a
+table4b
+
+# Question 1 
+
+table4aGathered <- table4a%>%gather(`1999`,`2000`,key="year",value="cases")
+table4aID <- mutate(table4aGathered,ID = paste(country, year, sep = "_"))
+
+table4bGathered <- table4b%>%gather(`1999`,`2000`,key="year",value="population")
+table4bID <- mutate(table4bGathered,ID = paste(country, year, sep = "_"))
+
+table4ab <- table4aID%>%inner_join(table4bID,by="ID")
+table4ab <- table4ab%>%select(country.x,year.x,cases, population)
+
+# Question 1a 
+table2Cases <- spread(table2,key=type,value=count)%>%select(country,year,cases)
+
+table4aCases <- table4a%>%gather(`1999`,`2000`,key="year",value="cases")
+
+table4abCases <- table4ab%>%select(country.x,year.x,cases)
+  
+# Question 1b
+table2Pop <- spread(table2,key=type,value=count)%>%select(country,year,population)
+
+table4bPop <- table4b%>%gather(`1999`,`2000`,key="year",value="population")
+
+table4abPop <- table4ab%>%select(country.x,year.x,population)
+
+# Question 1c
+spread(table2,key=type,value=count)%>%mutate(rate=cases/population *10000)
+
+table4ab%>%mutate(rate=cases/population *10000)
+
+# Question 1d
+table2Spread <- spread(table2,key=type,value=count)%>%mutate(rate=cases/population *10000)
+
+table4abRate <- table4ab%>%mutate(rate=cases/population *10000)
+
+# Question 2
+table4a%>%gather(1999,2000,key="year",value="cases")
+
+# Question 3 
+
+summary(flights)
+
+# 3a
+by_day <- group_by(nycflights13::flights,year,month,day)
+summarize(by_day,avg_of_flight_time=mean(dep_time,na.rm=TRUE), sd_of_flight_time=sd(dep_time,na.rm=TRUE))
+
+# 3b
+flightDeparts <- select(flights, dep_time, sched_dep_time, dep_delay)
+
+# 3c 
+binaryDelayFlights <- mutate(flights, binary_delay = dep_delay >= 0)
+depTimeMin <- mutate(binaryDelayFlights, minutes = substr(dep_time, nchar(dep_time)-2+1, nchar(dep_time)))
+filteredFlights20to30 <- filter(depTimeMin, minutes >= 20 & minutes <= 30)
+filteredFlights50to60 <- filter(depTimeMin, minutes >= 50 & minutes <= 60)
+
+numFlightsLeavingEarly2030 <- (length(which(!filteredFlights20to30$binary_delay))/length(filteredFlights20to30$binary_delay))*100
+numFlightsLeavingEarly5060 <- (length(which(!filteredFlights50to60$binary_delay))/length(filteredFlights50to60$binary_delay))*100
+
+
+filteredFlights20to30Take2 <- filter(binaryDelayFlights, dep_delay <= -20 & dep_delay >= -30)
+filteredFlights50to60Take2 <- filter(binaryDelayFlights, dep_delay <= -50 & dep_delay >= -60)
