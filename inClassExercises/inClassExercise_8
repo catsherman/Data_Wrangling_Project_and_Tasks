@@ -1,0 +1,19 @@
+library(rtimes)
+# this package provides an interface to Congress,Campaign finance, Article search, and geographic AIS from NY times
+#http://developer.nytimes.com/
+article_key <- "XXX"
+article_search_climateChange <- as_search(q="Climate Change", begin_date="20180101",end_date='20201105 ',key=article_key)
+names(article_search_climateChange)
+article_search_climateChange$meta
+article_search_climateChange$data
+
+library(twitteR) 
+# Change consumer_key, consume_secret, access_token, and 
+# access_secret based on your own keys
+consumer_key <- "XXX"
+consumer_secret <-"XXXX"
+access_token <- "XXX"
+access_secret <- "XXX" 
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+tw = searchTwitter('#earth hour', n = 1e4, since = '2018-10-01', retryOnRateLimit = 1e3)
+d = twListToDF(tw)
