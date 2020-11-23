@@ -1,0 +1,20 @@
+DX_Tbl <- sqlQuery(myconn,"SELECT * FROM qbs181.dbo.Dx")
+DX_Tbl$DX_NAME <- str_to_lower(DX_Tbl$DX_NAME)
+
+DX_Tbl$DX_NAME <- str_trim(DX_Tbl$DX_NAME)
+DX_Tbl$DX_NAME <- gsub(",","", DX_Tbl$DX_NAME,fixed=TRUE)
+
+Inpatient_Tbl <- sqlQuery(myconn,"Select * from qbs181.dbo.Inpatient") 
+Outpatient_Tbl <- sqlQuery(myconn,"Select * from qbs181.dbo.Outpatient") 
+
+Inpatient_Tbl$NEW_PATIENT_DHMC_MRN <- gsub("-","", Inpatient_Tbl$NEW_PATIENT_DHMC_MRN,fixed=TRUE)
+Outpatient_Tbl$NEW_PATIENT_DHMC_MRN <- gsub("-","", Outpatient_Tbl$NEW_PATIENT_DHMC_MRN,fixed=TRUE)
+all_Patients <- merge(Inpatient_Tbl, Outpatient_Tbl, by.x = "NEW_PATIENT_DHMC_MRN", by.y = "NEW_PATIENT_DHMC_MRN")
+
+all_Patients_by_ID <- merge(Inpatient_Tbl, Outpatient_Tbl, by.x = "NEW_PAT_ID", by.y = "NEW_PAT_ID", all = TRUE)
+
+uniq_Pat_DHMC_ID <- unique(all_Patients_by_ID$NEW_PATIENT_DHMC_MRN.x)
+length(uniq_Pat_DHMC_ID)
+
+# Yes you see repeats of the new patient DHMC Id because when the number of 
+# unique values is counted there are fewer than there are rows
