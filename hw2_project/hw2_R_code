@@ -1,0 +1,86 @@
+#install.packages("RODBC")
+#install.packages('dplyr')
+#install.packages('sqldf')
+#install.packages("stringr")
+#install.packages("tidyverse")
+
+library("RODBC")
+library(dplyr)
+#library(sqldf)
+library(stringr)
+library("tidyverse")
+
+myconn <- odbcConnect("qbs181","csherman","csherman@qbs181")
+
+sqlQuery(myconn,"drop table qbs181.csherman.hw2")
+
+sqlQuery(myconn,"SELECT * into qbs181.csherman.hw2 from qbs181.dbo.PhoneCall_Encounter")
+
+catshw2Db <- sqlQuery(myconn,"SELECT * into qbs181.csherman.hw2 from qbs181.dbo.PhoneCall_Encounter")
+catsPhoneCallTbl <- sqlQuery(myconn,"SELECT * from qbs181.csherman.hw2")
+
+# Question 1
+catshw2DbChanges <- sqlQuery(myconn,"Alter table qbs181.csherman.hw2
+	Add EnrollmentGroup As 
+		Case 
+			When EncounterCode = 125060000 then 'Clinical Alert'
+			When EncounterCode = 125060001 then 'Health Coaching'
+			When EncounterCode = 125060002 then 'Technical Question'
+			When EncounterCode = 125060003 then 'Administrative'
+			When EncounterCode = 125060005 then 'Lack of engagement'
+			When EncounterCode = 125060004 then 'Other'
+		End")
+
+catsPhoneCallTbl <- sqlQuery(myconn,"SELECT * from qbs181.csherman.hw2")
+
+#Question 2
+countsOfEncounters <- sqlQuery(myconn, "SELECT EnrollmentGroup, COUNT(EnrollmentGroup) as Count 
+                               From qbs181.csherman.hw2 Group by EnrollmentGroup")
+
+#Question 3
+mergedCallTbl <- sqlQuery(myconn, "SELECT * 
+                          FROM qbs181.csherman.hw2 
+                          inner join qbs181.dbo.CallDuration 
+                          on 
+                          qbs181.csherman.hw2.CustomerId = qbs181.dbo.CallDuration.tri_CustomerIDEntityReference")
+
+#Question 4
+callInboundCount <- sum(mergedCallTbl$CallType == 1)
+callOutboundCount <- sum(mergedCallTbl$CallType == 2)
+
+noResponseCount <- sum(mergedCallTbl$CallOutcome == 1)
+voicemailCount <- sum(mergedCallTbl$CallOutcome == 2)
+successCount <- sum(mergedCallTbl$CallOutcome == 3)
+
+callDurationByGroup <- sqlQuery(myconn, "SELECT EnrollmentGroup, SUM(CallDuration) as Duration 
+                               FROM qbs181.csherman.hw2 
+                               inner join qbs181.dbo.CallDuration 
+                               on
+                               qbs181.csherman.hw2.CustomerId = qbs181.dbo.CallDuration.tri_CustomerIDEntityReference
+                               Group by EnrollmentGroup")
+
+#Question 5
+textsPerWeek <- sqlQuery(myconn, "SELECT t.SenderName, DATEPART(ww, t.TextSentDate) as weekNum, count(t.TextSentDate) as numTexts 
+FROM qbs181.dbo.Demographics d 
+inner join
+qbs181.dbo.Conditions c
+on 
+d.contactid = c.tri_patientid
+inner join 
+qbs181.dbo.Text t 
+on 
+d.contactid = t.tri_contactId
+Group by SenderName, DATEPART(ww, t.TextSentDate)")
+
+#Question 6
+textsByCondition <- sqlQuery(myconn, "SELECT c.tri_name, DATEPART(ww, t.TextSentDate) as weekNum, count(t.TextSentDate) as numTexts
+FROM qbs181.dbo.Demographics d 
+right join
+qbs181.dbo.Conditions c
+on 
+d.contactid = c.tri_patientid
+inner join 
+qbs181.dbo.Text t 
+on 
+d.contactid = t.tri_contactId
+Group by c.tri_name, DATEPART(ww, t.TextSentDate)")
