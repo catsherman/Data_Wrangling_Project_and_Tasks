@@ -1,0 +1,25 @@
+demographics$tri_age[is.na(demographics$tri_age)] <- round(mean(demographics$tri_age, na.rm = TRUE), 0)
+
+sqlQuery(myconn,"drop table qbs181.csherman.phoneCall")
+cshermPhoneCall <- sqlQuery(myconn,"SELECT * into qbs181.csherman.phoneCall from qbs181.dbo.PhoneCall")
+
+phoneCallMod <- sqlQuery(myconn,"Alter table qbs181.csherman.phoneCall
+	Add CallEndTime As 
+	DATEADD(mi, Try_Convert(int, CallDuration), CallStartTime)")
+
+cshermPhoneCall <- sqlQuery(myconn,"SELECT * from qbs181.csherman.phoneCall")
+
+procedure <- sqlQuery(myconn,"SELECT * from qbs181.dbo.[Procedure]")
+encounters <- sqlQuery(myconn,"SELECT * from qbs181.dbo.encounters")
+
+proAndEnc <- merge(procedure, encounters, by.x = "PAT_ENC_CSN_ID", by.y = "NEW_PAT_ENC_CSN_ID")
+proAndEnc$lengthOfStay <- as.integer(as.Date(proAndEnc$NEW_HSP_DISCH_DATE,format="%Y-%m-%d") - as.Date(proAndEnc$NEW_HSP_ADMIT_DATE,format="%m/%d/%Y"))
+
+maxStays <- proAndEnc[which.max(proAndEnc$lengthOfStay),]
+
+providers <- sqlQuery(myconn,"SELECT * from qbs181.dbo.Provider")
+
+proEncAndPro <- merge(providers, proAndEnc, by.x = "NEW_PROV_ID", by.y = "PROV_ID")
+noNALengthOfStay <- proEncAndPro[complete.cases(proEncAndPro$lengthOfStay),]
+
+ordered <- noNALengthOfStay[order(noNALengthOfStay$lengthOfStay, decreasing = TRUE),]
