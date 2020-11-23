@@ -1,0 +1,394 @@
+# All installs and packages used/needed and initialization
+#install.packages("Hmisc")
+#install.packages("SASxport")
+library("RODBC")
+library(dplyr)
+#library(sqldf)
+library(stringr)
+library(Hmisc)
+library(SASxport)
+
+setwd("//mac/Home/Documents/College/Dartmouth/Fall 2020/Data Wrangling/MidTerm")
+
+#Loading Data from working directory
+data(Alfalfa)
+lookup.xport("DIQ_I.xpt")
+DIQ_I <- read.xport("DIQ_I.xpt")
+head (DIQ_I)
+
+# Establishing SQL Conncetion and building table
+myconn <- odbcConnect("dartQBS181","csherman","csherman@qbs181")
+sqlSave(myconn, DIQ_I, tablename = "csherman.midterm")
+# Most SQL Queries were completed with DBeaver because they were super slow with the 
+#size of thes
+
+
+# Comparing and looking at Missing values in table
+notNAs <- colSums(!is.na(DIQ_I))
+nas <- colSums(is.na(DIQ_I))
+#print(notNAs)
+#print(nas)
+total <- rbind(notNAs, nas)
+#print(total)
+
+#Save into new table so that can refer to original
+DIQ_I2 <- DIQ_I
+
+# 1.
+# DID040, AgeDiagnosed
+# Impute the age of those who were diagnoised with diabetes and their age was unknown
+avgDiabetesDiagnosisAge <- round(mean(DIQ_I2$DID040[DIQ_I2$DIQ010 == 1], na.rm = TRUE), 0)
+#print(which(is.na(DIQ_I$DID040[DIQ_I$DIQ010 == 1])))
+DIQ_I2$DID040[which(is.na(DIQ_I2$DID040))] <- avgDiabetesDiagnosisAge
+DIQ_I2$DID040[which(DIQ_I2$DIQ010 == 2 | DIQ_I2$DIQ010 == 3 | DIQ_I2$DIQ010 == 9)] <- "Not Diagnosed" 
+
+# 3.
+# DIQ160, HavePrediabetes, Impute that the answer is no for those who did not respond, 
+# and change the numbers to their corresponding value description.
+DIQ_I2$DIQ160[DIQ_I2$DIQ160 == 1] <- "Yes"
+DIQ_I2$DIQ160[DIQ_I2$DIQ160 == 2] <- "No"
+DIQ_I2$DIQ160[DIQ_I2$DIQ160 == 7] <- "Refused"
+DIQ_I2$DIQ160[DIQ_I2$DIQ160 == 9] <- "Don't Know"
+DIQ_I2$DIQ160[which(is.na(DIQ_I2$DIQ160))] <- "No"
+
+# 4.
+# DIQ170, HealthRiskForDiabetes, 3,389 values are missing 
+# Impute the answer as no for those who did not respond, and change the numbers to their corresponding value description.  
+DIQ_I2$DIQ170[DIQ_I2$DIQ170 == 1] <- "Yes"
+DIQ_I2$DIQ170[DIQ_I2$DIQ170 == 2] <- "No"
+DIQ_I2$DIQ170[DIQ_I2$DIQ170 == 7] <- "Refused"
+DIQ_I2$DIQ170[DIQ_I2$DIQ170 == 9] <- "Don't Know"
+DIQ_I2$DIQ170[which(is.na(DIQ_I2$DIQ170))] <- "No"
+
+# 5.
+# DIQ172, FeelCouldBeAtRisk, Impute the answer as no for those who did not respond, 
+# and change the numbers to their corresponding value description
+DIQ_I2$DIQ172[DIQ_I2$DIQ172 == 1] <- "Yes"
+DIQ_I2$DIQ172[DIQ_I2$DIQ172 == 2] <- "No"
+DIQ_I2$DIQ172[DIQ_I2$DIQ172 == 7] <- "Refused"
+DIQ_I2$DIQ172[DIQ_I2$DIQ172 == 9] <- "Don't Know"
+DIQ_I2$DIQ172[which(is.na(DIQ_I2$DIQ172))] <- "No"
+
+
+# 6. . 
+#Change the multiple choice answers in 175 to the Choice the number represents
+#Done paritally in SQL
+DIQ_I2$DIQ175A[DIQ_I2$DIQ175A == 10] <- "Family History"
+DIQ_I2$DIQ175A[DIQ_I2$DIQ175A == 77] <- "Refused"
+DIQ_I2$DIQ175A[DIQ_I2$DIQ175A == 99] <- "Don't Know"
+DIQ_I2$DIQ175B[DIQ_I2$DIQ175B == 11] <- "Overweight"
+DIQ_I2$DIQ175C[DIQ_I2$DIQ175C == 12] <- "Age"
+DIQ_I2$DIQ175D[DIQ_I2$DIQ175D == 13] <- "Poor Diet"
+DIQ_I2$DIQ175E[DIQ_I2$DIQ175E == 14] <- "Race"
+DIQ_I2$DIQ175F[DIQ_I2$DIQ175F == 15] <- "Baby > 9lbs at Birth"
+DIQ_I2$DIQ175G[DIQ_I2$DIQ175G == 16] <- "Lack of Physical Activity"
+DIQ_I2$DIQ175H[DIQ_I2$DIQ175H == 17] <- "High Blood Pressure"
+DIQ_I2$DIQ175I[DIQ_I2$DIQ175I == 18] <- "High Blood Sugar"
+DIQ_I2$DIQ175J[DIQ_I2$DIQ175J == 19] <- "High Cholesterol"
+DIQ_I2$DIQ175K[DIQ_I2$DIQ175K == 20] <- "Hypoglycemic"
+DIQ_I2$DIQ175L[DIQ_I2$DIQ175L == 21] <- "Extreme Hunger"
+DIQ_I2$DIQ175M[DIQ_I2$DIQ175M == 22] <- "Tingling/Numbness in Hand or Feet"
+DIQ_I2$DIQ175N[DIQ_I2$DIQ175N == 23] <- "Blurred Vision"
+DIQ_I2$DIQ175O[DIQ_I2$DIQ175O == 24] <- "Inreased Fatigue"
+DIQ_I2$DIQ175P[DIQ_I2$DIQ175P == 25] <- "Anyone Could be at Risk"
+DIQ_I2$DIQ175Q[DIQ_I2$DIQ175Q == 26] <- "Doctor Warning"
+DIQ_I2$DIQ175R[DIQ_I2$DIQ175R == 27] <- "Other"
+DIQ_I2$DIQ175S[DIQ_I2$DIQ175S == 28] <- "Gestational Diabetes"
+DIQ_I2$DIQ175T[DIQ_I2$DIQ175T == 29] <- "Frequent Urination"
+DIQ_I2$DIQ175U[DIQ_I2$DIQ175U == 30] <- "Thirst"
+DIQ_I2$DIQ175V[DIQ_I2$DIQ175V == 31] <- "Craving Sweets/Eating Sugar"
+DIQ_I2$DIQ175W[DIQ_I2$DIQ175W == 32] <- "Medication"
+DIQ_I2$DIQ175X[DIQ_I2$DIQ175X == 33] <- "Polycystic Ovarian Syndrome"
+
+
+# 7. 
+# DIQ180, BloodTestPast3Years
+# Impute the value half yes, half no, Then change the numbers to their 
+# corresponding value description.
+indexOfUnknowns <- which(is.na(DIQ_I2$DIQ180))
+yesIndicies <- indexOfUnknowns[1:(length(indexOfUnknowns)/2)]
+noIndicies <- indexOfUnknowns[(length(indexOfUnknowns)/2)+1:length(indexOfUnknowns)]
+DIQ_I2$DIQ180[yesIndicies] <- "Yes"
+DIQ_I2$DIQ180[noIndicies] <- "No"
+DIQ_I2$DIQ180[DIQ_I2$DIQ180 == 1] <- "Yes"
+DIQ_I2$DIQ180[DIQ_I2$DIQ180 == 2] <- "No"
+DIQ_I2$DIQ180[DIQ_I2$DIQ180 == 7] <- "Refused"
+DIQ_I2$DIQ180[DIQ_I2$DIQ180 == 9] <- "Don't Know"
+
+# 8. 
+# DIQ050, TakingInsulin
+# Change DIQ050 to the Coded Values in the table
+DIQ_I2$DIQ050[DIQ_I2$DIQ050 == 1] <- "Yes"
+DIQ_I2$DIQ050[DIQ_I2$DIQ050 == 2] <- "No"
+DIQ_I2$DIQ050[DIQ_I2$DIQ050 == 7] <- "Refused"
+DIQ_I2$DIQ050[DIQ_I2$DIQ050 == 9] <- "Don't Know"
+
+
+# 9. 
+# DID060, MonthsTakingInsulin, Impute values as no because it is known that 9,316 people 
+# are not taking insulin and change the coded value to the value description from the online 
+# table. Multiply the ranged values that are in years (from DID060U) by 12 to get months and 
+# make sure they're all in the same units (eliminate the need for the other field and make 
+# them comparable).
+DIQ_I2$DID060[which(is.na(DIQ_I2$DID060))] <- 0
+DIQ_I2$DID060[which(DIQ_I2$DID060 == 666)] <- "Less than 1 month"
+DIQ_I2$DID060[which(DIQ_I2$DID060 == 777)] <- "Refused"
+DIQ_I2$DID060[which(DIQ_I2$DID060 == 999)] <- "Don't know"
+dataInYears <- DIQ_I2$DID060[which(DIQ_I2$DIQ060U == 2)]
+DIQ_I2$DID060[dataInYears] <- round(DIQ_I2$DID060[dataInYears]*12, 0)
+DIQ_I2$DID060[which(DIQ_I2$DID060 == 0)] <- "Not Taking Insulin"
+
+# 10. Remove DIQ060U
+drops <- c("DIQ060U")
+DIQ_I2 <- DIQ_I2[ , !(names(DIQ_I2) %in% drops)]
+
+
+# 12. 
+# DIQ070, TakeDiabeticPills, Impute the answer as no for those who did not 
+# respond and change the numbers to their corresponding value description
+DIQ_I2$DIQ070[DIQ_I2$DIQ070 == 1] <- "Yes"
+DIQ_I2$DIQ070[DIQ_I2$DIQ070 == 2] <- "No"
+DIQ_I2$DIQ070[DIQ_I2$DIQ070 == 7] <- "Refused"
+DIQ_I2$DIQ070[DIQ_I2$DIQ070 == 9] <- "Don't Know"
+DIQ_I2$DIQ070[which(is.na(DIQ_I2$DIQ070))] <- "No"
+
+# 14.
+# DIQ230, TimeSinceDiabeticSpecialist
+# Impute the answer as no for those who did not respond and 
+# change the numbers to their corresponding value description
+DIQ_I2$DIQ230[DIQ_I2$DIQ230 == 1] <- "1 year ago or less"
+DIQ_I2$DIQ230[DIQ_I2$DIQ230 == 2] <- "More than 1 year, but less than 2"
+DIQ_I2$DIQ230[DIQ_I2$DIQ230 == 3] <- "More than 2 years, but less than 5"
+DIQ_I2$DIQ230[DIQ_I2$DIQ230 == 4] <- "More than 5 years"
+DIQ_I2$DIQ230[DIQ_I2$DIQ230 == 5] <- "Never"
+DIQ_I2$DIQ230[DIQ_I2$DIQ230 == 7] <- "Refused"
+DIQ_I2$DIQ230[DIQ_I2$DIQ230 == 9] <- "Don't Know"
+DIQ_I2$DIQ230[which(is.na(DIQ_I2$DIQ230))] <- "Never"
+
+
+# 15.  
+# DIQ240, DocForDiabetes, Impute the answer as no for those who did not respond 
+# and change the numbers to their corresponding value description
+DIQ_I2$DIQ240[DIQ_I2$DIQ240 == 1] <- "Yes"
+DIQ_I2$DIQ240[DIQ_I2$DIQ240 == 2] <- "No"
+DIQ_I2$DIQ240[DIQ_I2$DIQ240 == 7] <- "Refused"
+DIQ_I2$DIQ240[DIQ_I2$DIQ240 == 9] <- "Don't Know"
+DIQ_I2$DIQ240[which(is.na(DIQ_I2$DIQ240))] <- "No"
+
+# 16.
+# DID250, TimeSeenADoc, Impute the answer as 1 for those who did not 
+# respond and change the numbers to their corresponding value description
+DIQ_I2$DID250[DIQ_I2$DID250 == 7777] <- "Refused"
+DIQ_I2$DID250[DIQ_I2$DID250 == 9999] <- "Don't Know"
+DIQ_I2$DID250[which(is.na(DIQ_I2$DID250))] <- 1
+
+# 17.
+# DID260, DaysFreqBloodSugarCheck, Impute values as 0 because it is known that 
+# 9,316 people are not taking insulin and change the coded value to the value 
+# description from the online table
+
+# Impute mean yearly checking and replace NAs
+valInYears <- DIQ_I2$DID260[which(DIQ_I2$DIQ260U == 4)]
+indexOfYears <- which(DIQ_I2$DIQ260U == 4)
+meanYearly <- round(mean(valInYears, na.rm = TRUE))
+DIQ_I2$DID260[indexOfYears[which(is.na(DIQ_I2$DID260[valInYears]))]] <- meanYearly
+#print(DIQ_I2$DID260[indexOfYears])
+DIQ_I2$DID260[indexOfYears] <- round(DIQ_I2$DID260[indexOfYears]*365, 0)
+
+# Impute mean monthly checking and replace NAs
+valInMonths <- DIQ_I2$DID260[which(DIQ_I2$DIQ260U == 3)]
+indexOfMonths <- which(DIQ_I2$DIQ260U == 3)
+meanMonthly <- round(mean(valInMonths, na.rm = TRUE))
+DIQ_I2$DID260[indexOfMonths[which(is.na(DIQ_I2$DID260[valInMonths]))]] <- meanMonths
+#print(DIQ_I2$DID260[indexOfMonths])
+DIQ_I2$DID260[indexOfMonths] <- round(DIQ_I2$DID260[indexOfMonths]*30.4167, 0)
+
+# Impute mean weekly checking and replace NAs
+valInWeeks <- DIQ_I2$DID260[which(DIQ_I2$DIQ260U == 2)]
+indexOfWeeks <- which(DIQ_I2$DIQ260U == 2)
+meanWeekly <- round(mean(valInWeeks, na.rm = TRUE))
+DIQ_I2$DID260[indexOfWeeks[which(is.na(DIQ_I2$DID260[valInWeeks]))]] <- meanWeekly
+#print(DIQ_I2$DID260[indexOfWeeks])
+DIQ_I2$DID260[indexOfWeeks] <- round(DIQ_I2$DID260[indexOfWeeks]*7, 0)
+
+# Impute mean daily checking and replace NAs
+valInDays <- DIQ_I2$DID260[which(DIQ_I2$DIQ260U == 1)]
+indexOfDays <- which(DIQ_I2$DIQ260U == 1)
+meanDaily <- round(mean(valInDays, na.rm = TRUE))
+DIQ_I2$DID260[indexOfDays[which(is.na(DIQ_I2$DID260[valInDays]))]] <- meanDaily
+#print(DIQ_I2$DID260[indexOfDays])
+
+DIQ_I2$DID260[DIQ_I2$DID260 == 777] <- "Refused"
+DIQ_I2$DID260[DIQ_I2$DID260 == 999] <- "Don't Know"
+DIQ_I2$DID260[which(is.na(DIQ_I2$DID260))] <- 0
+
+# 18. Drop Column
+drops2 <- c("DIQ260U")
+DIQ_I2 <- DIQ_I2[ , !(names(DIQ_I2) %in% drops2)]
+
+# 19. 
+# DIQ275, CheckedForA1C
+# Impute the missing values as Yes, Then change the numbers to their 
+# corresponding value description. 
+
+DIQ_I2$DIQ275[DIQ_I2$DIQ275 == 1] <- "Yes"
+DIQ_I2$DIQ275[DIQ_I2$DIQ275 == 2] <- "No"
+DIQ_I2$DIQ275[DIQ_I2$DIQ275 == 7] <- "Refused"
+DIQ_I2$DIQ275[DIQ_I2$DIQ275 == 9] <- "Don't Know"
+DIQ_I2$DIQ275[which(is.na(DIQ_I2$DIQ275))] <- "Yes"
+
+# 20. 
+# DIQ280, LastA1CLevel 
+# Impute the missing values as "Unknown", Then change the numbers to their 
+# corresponding value description where applicable 
+DIQ_I2$DIQ280[DIQ_I2$DIQ280 == 777] <- "Refused"
+DIQ_I2$DIQ280[DIQ_I2$DIQ280 == 999] <- "Don't Know"
+DIQ_I2$DIQ280[which(is.na(DIQ_I2$DIQ280))] <- "Unknown"
+
+# 21. 
+# DIQ291, GoalA1C
+# Impute the missing values as "Unknown" because we do not know if their 
+# doctor specified a goal, if they need a goal, or if they don't know what 
+# the goal should be, and change the numbers to their corresponding value 
+# description where applicable 
+DIQ_I2$DIQ291[DIQ_I2$DIQ291 == 1] <- "< 6"
+DIQ_I2$DIQ291[DIQ_I2$DIQ291 == 2] <- "< 7"
+DIQ_I2$DIQ291[DIQ_I2$DIQ291 == 3] <- "< 8"
+DIQ_I2$DIQ291[DIQ_I2$DIQ291 == 4] <- "< 9"
+DIQ_I2$DIQ291[DIQ_I2$DIQ291 == 5] <- "< 10"
+DIQ_I2$DIQ291[DIQ_I2$DIQ291 == 6] <- "Provider did not specify"
+DIQ_I2$DIQ291[DIQ_I2$DIQ291 == 77] <- "Refused"
+DIQ_I2$DIQ291[DIQ_I2$DIQ291 == 99] <- "Don't Know"
+DIQ_I2$DIQ291[which(is.na(DIQ_I2$DIQ291))] <- "Unknown"
+
+# 22. Complete
+
+# 23. 
+# DIQ300S/DIQ300D, BloodPressure,
+# Impute the missing values as "Unknown", Then change the numbers to their 
+# corresponding value description where applicable
+DIQ_I2$DIQ300S[DIQ_I2$DIQ300S == 7777] <- "Refused"
+DIQ_I2$DIQ300D[DIQ_I2$DIQ300D == 7777] <- "Refused"
+DIQ_I2$DIQ300S[DIQ_I2$DIQ300S == 9999] <- "Don't Know"
+DIQ_I2$DIQ300D[DIQ_I2$DIQ300D == 9999] <- "Don't Know"
+DIQ_I2$DIQ300S[which(is.na(DIQ_I2$DIQ300S))] <- "Unknown"
+DIQ_I2$DIQ300D[which(is.na(DIQ_I2$DIQ300D))] <- "Unknown"
+
+# 24. 
+# DID310S/DID310D, GoalBloodPressure, 
+# Impute the missing values as "Unknown", Then change the numbers to their 
+# corresponding value description where applicable
+DIQ_I2$DID310S[DIQ_I2$DID310S == 6666] <- "Provider did not specify goal"
+DIQ_I2$DID310D[DIQ_I2$DID310D == 6666] <- "Provider did not specify goal"
+DIQ_I2$DID310S[DIQ_I2$DID310S == 7777] <- "Refused"
+DIQ_I2$DID310D[DIQ_I2$DID310D == 7777] <- "Refused"
+DIQ_I2$DID310S[DIQ_I2$DID310S == 9999] <- "Don't Know"
+DIQ_I2$DID310D[DIQ_I2$DID310D == 9999] <- "Don't Know"
+DIQ_I2$DID310S[which(is.na(DIQ_I2$DID310S))] <- "Unknown"
+DIQ_I2$DID310D[which(is.na(DIQ_I2$DID310D))] <- "Unknown"
+
+# 25. 
+# 25.	DID320, LDL
+# Impute the missing values as "Unknown", and change the numbers to their 
+# corresponding value description where applicable
+DIQ_I2$DID320[DIQ_I2$DID320 == 5555] <- "Never heard of LDL"
+DIQ_I2$DID320[DIQ_I2$DID320 == 6666] <- "Never had a cholesterol test"
+DIQ_I2$DID320[DIQ_I2$DID320 == 7777] <- "Refused"
+DIQ_I2$DID320[DIQ_I2$DID320 == 9999] <- "Don't Know"
+DIQ_I2$DID320[which(is.na(DIQ_I2$DID320))] <- "Unknown"
+
+# 26.
+# DID330, GoalLDL
+# Impute the missing values as "Unknown" because we do not know if their 
+# doctor specified a goal, if they need a goal, or if they don't know what 
+# the goal should be, and change the numbers to their corresponding value 
+# description where applicable 
+DIQ_I2$DID330[DIQ_I2$DID330 == 6666] <- "Provider did not specify"
+DIQ_I2$DID330[DIQ_I2$DID330 == 7777] <- "Refused"
+DIQ_I2$DID330[DIQ_I2$DID330 == 9999] <- "Don't Know"
+DIQ_I2$DID330[which(is.na(DIQ_I2$DID330))] <- "Unknown"
+
+
+# 27. 
+# DID341, DocCheckedFeet, Calculated based on # times been to the doc in the 
+# past year, assume that every doctor will look at someone's feet 
+DIQ_I2$DID341[DIQ_I2$DID341 == 7777] <- "Refused"
+DIQ_I2$DID341[DIQ_I2$DID341 == 9999] <- "Don't Know"
+idxOfNAs <- which(is.na(DIQ_I2$DID341))
+DIQ_I2$DID341[which(is.na(DIQ_I2$DID341))] <- DIQ_I2$DID250[idxOfNAs]
+
+
+# 28. 
+# DID350, DayFreqOfFeetCheck, 
+# Impute mean for both value and unit of measure, then standardize by days to 
+# make things more comparable and change values to the descriptions in the table, 
+# where appropriate (Refused and Don't Know).   
+meanTimesCheckedFeet <- round(mean(DIQ_I2$DID350[which(DIQ_I2$DID350 != 9999)], na.rm = TRUE))
+meanUnitCheckedFeet <- round(mean(DIQ_I2$DIQ350U, na.rm = TRUE))
+DIQ_I2$DID350[which(is.na(DIQ_I2$DID350))] <- meanTimesCheckedFeet
+
+indexOfYearsFeet <- which(DIQ_I2$DIQ350U == 4)
+DIQ_I2$DID350[indexOfYearsFeet] <- round(DIQ_I2$DID350[indexOfYearsFeet]*365)
+
+indexOfMonthsFeet <- which(DIQ_I2$DIQ350U == 3)
+DIQ_I2$DID350[indexOfMonthsFeet] <- round(DIQ_I2$DID350[indexOfMonthsFeet]*30.4167)
+
+indexOfWeeksFeet <- which(DIQ_I2$DIQ350U == 2)
+DIQ_I2$DID350[indexOfWeeksFeet] <- round(DIQ_I2$DID350[indexOfWeeksFeet]*7)
+
+DIQ_I2$DID350[DIQ_I2$DID350 == 9999] <- "Don't Know"
+
+
+# 29. 
+# DIQ350U dropped because of previous standardization. 
+drops3 <- c("DIQ350U")
+DIQ_I2 <- DIQ_I2[ , !(names(DIQ_I2) %in% drops3)]
+
+
+# 30. 
+# DIQ360, TimeSincePupilDilation
+# Impute that the answer is the mean for those who did not respond and change 
+# the numbers to their corresponding value description. 
+meanTimeFrame <- round(mean(DIQ_I2$DIQ360, na.rm = TRUE))
+DIQ_I2$DIQ360[which(is.na(DIQ_I2$DIQ360))] <- meanTimeFrame
+DIQ_I2$DIQ360[DIQ_I2$DIQ360 == 1] <- "< 1 Month"
+DIQ_I2$DIQ360[DIQ_I2$DIQ360 == 2] <- "1-12 Months"
+DIQ_I2$DIQ360[DIQ_I2$DIQ360 == 3] <- "12-24 Months"
+DIQ_I2$DIQ360[DIQ_I2$DIQ360 == 4] <- "24+ Months"
+DIQ_I2$DIQ360[DIQ_I2$DIQ360 == 5] <- "Never"
+DIQ_I2$DIQ360[DIQ_I2$DIQ360 == 7] <- "Refused"
+DIQ_I2$DIQ360[DIQ_I2$DIQ360 == 9] <- "Don't Know"
+
+
+# 31. 
+# DIQ080, DiabetesAffectedEyes
+# Impute that the answer is no for those who did not respond and change the 
+# numbers to their corresponding value description
+DIQ_I2$DIQ080[DIQ_I2$DIQ080 == 1] <- "Yes"
+DIQ_I2$DIQ080[DIQ_I2$DIQ080 == 2] <- "No"
+DIQ_I2$DIQ080[DIQ_I2$DIQ080 == 7] <- "Refused"
+DIQ_I2$DIQ080[DIQ_I2$DIQ080 == 9] <- "Don't Know"
+DIQ_I2$DIQ080[which(is.na(DIQ_I2$DIQ080))] <- "No"
+
+
+# 32.
+# Uploading updated Table to SQL
+sqlQuery(myconn, "Drop Table csherman.midterm")
+sqlSave(myconn, DIQ_I2, tablename = "csherman.midterm")
+
+# STOP RUN SQL CODE NOW
+
+DIQ_IFinal <- sqlQuery(myconn, "Select SEQN, HaveDiabetes, DID040 as AgeWhenDiagnosed, DIQ170 as HealthRiskForDiabetes, DIQ172 as FeelCouldBeAtRisk, 
+	RiskFactors, DIQ180 as BloodTestPast3Years, DIQ050 as TakingInsulin, DID060 as MonthsTakingInsulin, DIQ070 as TakeDiabeticPills , 
+	DIQ230 as TimeSinceDiabeticSpecialist, DIQ240 as DocForDiabetes, DID250 as TimeSeenADoc,  DID260 as DaysFreqBloodSugarCheck, 
+	DIQ275 as CheckedForA1C, DIQ280 as LastA1CLevel, DIQ291 as GoalA1C, BloodPressure, GoalBloodPressure,  DID320 as LDL, DID330 as GoalLDL, 
+	DID341 as DocCheckedFeet, DID350 as DayFreqOfFeetCheck, DIQ360 as TimeSincePupilDilation, DIQ080 as DiabetesAffectedEyes
+From csherman.midterm")
+DIQ_IFinal[DIQ_IFinal==""] <- "Risk Factors Unknown"
+
+# Re-save Final Table
+sqlQuery(myconn, "Drop Table csherman.midterm")
+sqlSave(myconn, DIQ_IFinal, tablename = "csherman.midterm", rownames = FALSE)
+
+#DIQ_IFinal <- sqlQuery(myconn, "Select * From csherman.midterm")
+write.csv(DIQ_IFinal,'FinalTable.csv')
