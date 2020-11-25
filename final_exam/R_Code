@@ -1,0 +1,59 @@
+# Catherine Sherman
+# Final Exam
+# Data Wrangling QBS 181
+
+library("RODBC")
+library(dplyr)
+library(tidyverse)
+
+setwd("//mac/Home/Documents/College/Dartmouth/Fall 2020/Data Wrangling")
+
+# Question 1 (mulitple parts)
+IC_BP <- read.csv("IC_BP_v2.csv")
+
+
+# Establishing SQL Conncetion and building table
+myconn <- odbcConnect("dartQBS181","csherman","csherman@qbs181")
+# sqlSave(myconn, IC_BP, tablename = "csherman.ICBP")
+ICBP_SQL <- sqlQuery(myconn,"SELECT * FROM csherman.ICBP")
+Demo <- sqlQuery(myconn,"SELECT * FROM Demographics")
+
+Demo_ICBP <- merge(ICBP_SQL, Demo, by.x = "ID", by.y = "contactid")
+
+
+grouped_ICBP <- Demo_ICBP %>% group_by(ID) %>% summarise(tweleveWeekIndicator = (difftime(max(ObservedDate), min(ObservedDate), units = "weeks"))/12, AvgCondition = round(mean(ControlledBP01), digits = 0))
+
+minWeekVals <- sqlQuery(myconn,"Select ID, MAX(ObservedDate), ControlledBP01 
+FROM csherman.ICBP i
+Group By ID, ControlledBP01")
+
+maxWeekVals <- sqlQuery(myconn,"Select ID, MIN(ObservedDate), ControlledBP01  
+FROM csherman.ICBP i
+Group By ID, ControlledBP01 ")
+
+conditionDiff <- data.frame(minWeekVals$ControlledBP01, maxWeekVals$ControlledBP01, (maxWeekVals$ControlledBP01 - minWeekVals$ControlledBP01))
+cols <- c("min", "max", "diff")
+colnames(conditionDiff) <- cols
+
+conditionDiff$diff[conditionDiff$diff != 0]
+
+
+
+
+
+#Question 3
+Conditions <- sqlQuery(myconn,"SELECT * FROM Conditions")
+Texts <- sqlQuery(myconn,"SELECT * FROM Text")
+
+
+groupedTexts <- group_by(Texts, tri_contactId)
+mostRecentTexts <- summarise(groupedTexts, maxSentDate = max(TextSentDate))
+
+# Check that id is unique 
+sapply(mostRecentTexts, function(x) length(unique(x)))
+
+Demo_Conditions <- merge(Demo, Conditions, by.x = "contactid", by.y = "tri_patientid")
+Demo_texts_Conditions <- merge(mostRecentTexts, Demo_Conditions, by.x = "tri_contactId", by.y = "contactid")
+
+Text_Conditions <- merge(mostRecentTexts, Conditions, by.x = "tri_contactId", by.y = "tri_patientid")
+Demo_texts_Conditions <- merge(Demo, Text_Conditions, by.x = "contactid", by.y = "contactid")
