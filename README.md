@@ -1,5 +1,10 @@
 # Data_Wrangling_Project_and_Tasks
 
-•	Description of the purpose of the repository.
-•	A statement (1 sentence) that you have been given the permission to make your work public
-•	A description of each sub-directory (you do not need to explain every file; just every task
+The purpose of this repository is to organize and showcase projects that I've completed in QBS 181: Data Wrangling. This repository contains R and SQL code that was written throughout the course. I was given permission to make my work public.
+
+Sub-Directory Descriptions: 
+
+•	inClassExercises: 
+•	Homework: 
+•	Midterm Exam:
+•	Final Exam: 
