@@ -6,7 +6,7 @@ Sub-Directory Descriptions:
 
 •	inClassExercises: There are 8 short coding exercises in this folder. Their goal was to practice skills we learned in class that day. Their topics include practice SQL queries, querying SQL databases from R, using dplyr in R, and text/web scraping.  
 
-•	Hw1_project: This homework was strictly with SQL, and focuses on SQL queries, joins, working wiht dates and creating new columns.
+•	Hw1_project: This homework was strictly with SQL, and focuses on SQL queries, joins, working with dates and creating new columns.
 
 •	Hw2_project: This homework used both SQL and R. It focused on executing SQL queries from R, and executing similar commands as in homework 1 but from R.
 
