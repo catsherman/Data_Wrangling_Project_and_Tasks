@@ -5,6 +5,9 @@ The purpose of this repository is to organize and showcase projects that I've co
 Sub-Directory Descriptions: 
 
 •	inClassExercises: 
+
 •	Homework: 
+
 •	Midterm Exam:
+
 •	Final Exam: 
