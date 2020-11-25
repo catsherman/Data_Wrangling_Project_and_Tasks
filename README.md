@@ -6,7 +6,11 @@ Sub-Directory Descriptions:
 
 •	inClassExercises: 
 
-•	Homework: 
+•	Hw1: 
+
+•	Hw2:
+
+•	Hw3:
 
 •	Midterm Exam:
 
