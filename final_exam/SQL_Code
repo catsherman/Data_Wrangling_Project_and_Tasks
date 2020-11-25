@@ -1,0 +1,69 @@
+/* Catherine Sherman
+ * Final Exam
+ * Data Wrangling QBS 181
+ */
+
+
+sp_rename 'csherman.ICBP.BPAlerts', 'BP_Status'
+
+
+Alter table csherman.ICBP 
+	Add ControlledBP As
+		Case 
+			When BP_Status = 'Hypo1' or BP_Status = 'Normal' then 'Controlled'
+			When BP_Status = 'Hypo2' or BP_Status = 'HTN1' or BP_Status = 'HTN2' or BP_Status = 'HTN3' then 'Uncontrolled'
+		End
+		
+Alter table csherman.ICBP 
+	Add ControlledBP01 As
+		Case 
+			When BP_Status = 'Hypo1' or BP_Status = 'Normal' then 1
+			When BP_Status = 'Hypo2' or BP_Status = 'HTN1' or BP_Status = 'HTN2' or BP_Status = 'HTN3' then 0
+		End
+		
+
+ALTER table csherman.ICBP
+	Add ObservedDate As
+	Try_convert(DATETIME, ObservedTime)
+
+
+Select ID, MAX(ObservedDate), ControlledBP01 
+FROM csherman.ICBP i
+Group By ID, ControlledBP01 
+
+Select ID, MIN(ObservedDate), ControlledBP01  
+FROM csherman.ICBP i
+Group By ID, ControlledBP01 
+	
+
+SELECT TOP 10 * 
+FROM csherman.ICBP i 
+ORDER BY NEWID()	
+
+
+
+
+
+SELECT * 
+FROM dbo.Demographics d 
+right join
+dbo.Conditions c
+on 
+d.contactid = c.tri_patientid
+inner join 
+dbo.Text t 
+on 
+d.contactid = t.tri_contactId
+
+SELECT *
+FROM dbo.Demographics d 
+right join
+dbo.Conditions c
+on 
+d.contactid = c.tri_patientid
+inner join 
+(select t.tri_contactId, max(t.TextSentDate) as 'MostRecentTextSendDate' 
+From dbo.Text t 
+GROUP By t.tri_contactId) ts
+on 
+d.contactid = ts.tri_contactID 
